@@ -87,7 +87,7 @@ namespace Itinero.Transit.Tests.Core.Algorithms.CSA
 
 
             wr.AddOrUpdateConnection(
-                stop1, stop0, "qsdf", DateTime.Now.ToUniversalTime().AddMinutes(10),
+                stop1, stop0, "connectionId", DateTime.Now.ToUniversalTime().AddMinutes(10),
                 10 * 60, 0, 0, new TripId(0, 0), 0);
             wr.Close();
 
@@ -98,6 +98,13 @@ namespace Itinero.Transit.Tests.Core.Algorithms.CSA
                 .SelectTimeFrame(DateTime.Now.ToUniversalTime(), DateTime.Now.AddHours(1).ToUniversalTime())
                 .EarliestArrivalJourney();
             Assert.NotNull(easJ);
+
+            var lasJ = tdb.SelectProfile(
+                    new DefaultProfile())
+                .SelectStops(stop0, stop1)
+                .SelectTimeFrame(DateTime.Now.ToUniversalTime(), DateTime.Now.AddHours(1).ToUniversalTime())
+                .LatestDepartureJourney();
+            Assert.NotNull(lasJ);
         }
     }
 }

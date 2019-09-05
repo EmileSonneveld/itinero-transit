@@ -356,7 +356,6 @@ namespace Itinero.Transit.Tests.Core.Algorithms.CSA
         [Fact]
         public void TestNoOverscan()
         {
-            // build a one-connection db.
             var transitDb = new TransitDb(0);
             var writer = transitDb.GetWriter();
 
