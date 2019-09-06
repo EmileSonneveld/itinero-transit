@@ -203,8 +203,11 @@ namespace Itinero.Transit.Algorithms.CSA
 
         public List<Journey<T>> CalculateJourneys()
         {
-            var enumerator = _connections;
+            CalculateDirectWalks();
+
+
             // Move the enumerator after the last arrival time
+            var enumerator = _connections;
             enumerator.MoveTo(_lastArrival);
 
             var c = new Connection();
@@ -362,7 +365,7 @@ namespace Itinero.Transit.Algorithms.CSA
             // Let's calculate the various times to walk towards each possible destination
             _stopsReader.MoveTo(c.ArrivalStop);
             var walkDeparture = new Stop(_stopsReader);
-            
+
             // Gives a dictionary from c.Arrival to the targetLocations, where the key is the targetLocation
             var walkingTimes =
                 _walkPolicy?.TimesBetween( /* IStop from */ walkDeparture, _targetLocations);
@@ -396,18 +399,18 @@ namespace Itinero.Transit.Algorithms.CSA
             {
                 return null;
             }
-            
+
             var j =
-            // The 'genesis' indicating when we arrive ... 
-                new Journey<T>
-                    (fastestTarget.Value, arrivalTime,
-                        _metricFactory.Zero(),
-                        Journey<T>.ProfiledScanJourney)
-                    // ... the walking part ...
-                    .ChainSpecial
-                        (Journey<T>.OTHERMODE, c.ArrivalTime, c.ArrivalStop, new TripId(_walkPolicy))
-                    // ... the connection part ...
-                    .ChainBackward(c)
+                    // The 'genesis' indicating when we arrive ... 
+                    new Journey<T>
+                        (fastestTarget.Value, arrivalTime,
+                            _metricFactory.Zero(),
+                            Journey<T>.ProfiledScanJourney)
+                        // ... the walking part ...
+                        .ChainSpecial
+                            (Journey<T>.OTHERMODE, c.ArrivalTime, c.ArrivalStop, new TripId(_walkPolicy))
+                        // ... the connection part ...
+                        .ChainBackward(c)
                 ;
             return j;
         }
@@ -505,11 +508,11 @@ namespace Itinero.Transit.Algorithms.CSA
                 }
 
                 if (j.Time < _earliestDeparture)
-                { 
+                {
                     // this journey departs too early.
                     continue;
                 }
-                
+
                 // And add this journey with walk to the pareto frontier
                 if (!_stationJourneys.ContainsKey(stopId))
                 {
@@ -540,6 +543,17 @@ namespace Itinero.Transit.Algorithms.CSA
             frontier.AddToFrontier(j);
 
             return frontier;
+        }
+
+
+        /// <summary>
+        /// PCS does not take into account that in some cases a direct walk can be faster.
+        /// They are calculated here, before the algorithm is run
+        /// </summary>
+        private void CalculateDirectWalks()
+        {
+            
+            
         }
 
         public Dictionary<StopId, List<Journey<T>>> Isochrone()

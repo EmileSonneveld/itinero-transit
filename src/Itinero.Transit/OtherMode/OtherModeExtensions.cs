@@ -137,7 +137,7 @@ namespace Itinero.Transit.OtherMode
         }
 
         /// <summary>
-        /// A very straightforward implementation to get multiple routings at the same time...
+        /// A very straightforward implementation to get multiple routing at the same time...
         /// 
         /// </summary>
         public static Dictionary<StopId, uint> DefaultTimesBetween(
@@ -177,5 +177,6 @@ namespace Itinero.Transit.OtherMode
 
             return times;
         }
+        
     }
 }

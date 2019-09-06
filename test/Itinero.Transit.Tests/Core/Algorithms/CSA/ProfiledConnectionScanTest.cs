@@ -6,6 +6,7 @@ using Itinero.Transit.Data;
 using Itinero.Transit.Data.Core;
 using Itinero.Transit.Journey.Metric;
 using Itinero.Transit.OtherMode;
+using Itinero.Transit.Utils;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -396,5 +397,43 @@ namespace Itinero.Transit.Tests.Core.Algorithms.CSA
             
             Assert.Null(journeys);
         }
+        
+        
+        [Fact]
+        public void AllJourneysTest_NoConnectionTdb_WalkDirectly()
+        {
+            // build a one-connection db.
+            var transitDb = new TransitDb(0);
+            var writer = transitDb.GetWriter();
+
+            var stop0 = writer.AddOrUpdateStop("https://example.com/stops/0", 50, 50.0);
+            var stop1 = writer.AddOrUpdateStop("https://example.com/stops/1", 50.001,
+                50.001); 
+
+
+            var w0 = writer.AddOrUpdateStop("https://example.com/stops/2", 50.00001, 50.00001);
+
+            writer.Close();
+
+            var latest = transitDb.Latest;
+            var expDistance = DistanceEstimate.DistanceEstimateInMeter(50, 50, 50.001, 50.001);
+
+            var profile = new Profile<TransferMetric>(
+                new InternalTransferGenerator(),
+                new CrowsFlightTransferGenerator(),
+                TransferMetric.Factory,
+                TransferMetric.ParetoCompare);
+
+
+            // Walk from start
+            var journeys = latest.SelectProfile(profile)
+                .SelectStops(w0, stop1)
+                .SelectTimeFrame(new DateTime(2018, 12, 04, 9, 00, 00, DateTimeKind.Utc),
+                    new DateTime(2018, 12, 04, 11, 00, 00, DateTimeKind.Utc))
+                .AllJourneys();
+            Assert.NotNull(journeys);
+            Assert.Single(journeys);
+        }
+        
     }
 }
